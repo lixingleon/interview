@@ -190,9 +190,10 @@ LinkedList
 
       1. JDK1.8以前是数组加链表
       2. JDK1.8及以后，链表长度大于8且数组长度大于64，就把链表转化为红黑树
-
+      3. 红黑树是一种平衡二叉树，没有AVL树那么严格。牺牲了一点严格性，但是插入和删除效率大幅提高。
+   
    3. 常用方法：
-
+   
       ```java
       HashMap<String ,String> map = new HashMap<>();
       //1. 获取所有的key
@@ -203,7 +204,7 @@ LinkedList
       Set<java.util.Map.Entry<String,String>> set = map.entrySet();
       
       ```
-
+   
    4. 如何解决哈希冲突？
       1. 链表加数组的形式
    5. put方法怎么实现的？
@@ -679,6 +680,14 @@ clinit are the static initialization blocks for the class, and static field init
 
 这里的变量指成员变量和静态变量，这有这些才是线程共享的。局部变量和方法参数是线程私有的，不会造成冲突。
 
+
+
+## Java内存泄漏
+
+长生命周期的引用指向短生命周期的对象。比如成员变量指向方法中创建的对象。当方法执行结束，对象却不能被回收，因为对象仍被成员变量所引用。这就称为内存泄漏。
+
+解决方案：尽量减少对象的作用域。记得将长生命周期的引用置为null
+
 ## 类加载过程
 
 加载 连接（校验，准备，解析） 初始化
@@ -701,7 +710,11 @@ BootstrapClassLoader：加载核心类，如jre/rt.jar包
 
 自底向上检查类是否被加载。自顶向下尝试加载类
 
-好处：避免重复加载类。因为一个类和加载它的类加载器共同确定类的唯一性。保证核心API不被篡改。
+好处：能确保一个类只会被一个类加载器加载。因为一个类和加载它的类加载器共同确定类的唯一性，这样就保证了类的唯一性，避免重复加载类。保证核心API不被篡改。
+
+如何打破双亲委派派机制：
+
+自己实现一个类加载器，重写loadClass方法
 
 
 
@@ -921,11 +934,11 @@ thread2中this.notify()之后，处于wait状态的thread1被唤醒，进入read
 
 ## lock接口和synchronized关键字
 
-1. Lock是一个接口，synchronized是java内置的关键字
-2. synchronized发生异常时会自动释放锁，lock不会，所以一般都需要在finally块中释放锁unlock()
+1. Lock是一个接口，synchronized是java内置的关键字。
 3. lock可以让等待锁的线程中断，synchronized不行。
 4. lock可以知道有没有获得锁，synchronized不行。
 5. lock有读写锁，可以提高多个线程读操作的效率。
+5. synchronized发生异常时会自动释放锁，lock不会，所以一般都需要在finally块中释放锁unlock()。
 
 ## 可重入锁等
 
@@ -936,8 +949,6 @@ thread2中this.notify()之后，处于wait状态的thread1被唤醒，进入read
 公平锁：ReentrantLock lock = new ReentrantLock(true) 是公平的。等待最久的线程最先得到锁。synchronized不是。
 
 读写锁：读写分开的锁。
-
-synchronized voltile 指令重排 死锁 异常 lock锁
 
 ## 线程安全的容器
 

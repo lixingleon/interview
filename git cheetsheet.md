@@ -43,3 +43,5 @@ git branch -d dev: 删除名叫dev的分支
 ```
 git merge --no-ff -m "" dev: 合并的同时保存分支信息
 ```
+
+git revert <SHA> 会undo该commit的所有操作，并且新增一个commit

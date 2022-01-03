@@ -58,3 +58,24 @@ git revert <SHA> 会undo该commit的所有操作，并且新增一个commit
 git push origin master:feature
 ```
 
+比较常见的git场景
+
+```
+1.本地在远程仓库的最新commit：c1的基础上开发一个新功能。
+2.结果开发结束后，远程仓库已经被同事更新，最新commit现在是c2。
+3.这时无法直接push。而应该先把c2 incoporate到本地。
+
+可以用rebase或merge
+git fetch origin master
+git merge origin/master
+git push origin master
+
+git fetch origin master
+git rebase origin/master
+git push origin master
+
+(rebase 可以简化为：
+git fetch --rebase
+git push origin master）
+```
+

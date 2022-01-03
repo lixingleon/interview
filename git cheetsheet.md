@@ -6,10 +6,10 @@ git commit -m ""
 
 git log: 查看所有commit记录
 
-git log --pretty=oneline 查看所有commit记录并只展示一行
+查看所有分支的图形化commit记录
 
 ```
-git log --graph --pretty=oneline --abbrev-commit
+git log --oneline --decorate --graph --all
 ```
 
 git status: 查看文件情况
@@ -45,8 +45,16 @@ git merge --no-ff -m "" dev: 合并的同时保存分支信息
 ```
 
 git revert <SHA> 会undo该commit的所有操作，并且新增一个commit
-  
+
   ![image](https://user-images.githubusercontent.com/52194032/147456814-6db181ee-1f8e-4ec7-b93c-3e72be9519c2.png)
 ![image](https://user-images.githubusercontent.com/52194032/147456937-c86918bd-b434-4f84-baa0-9ee62adfc061.png)
 ![image](https://user-images.githubusercontent.com/52194032/147456946-fdf535af-eb65-4ea0-9aa9-b5f832beba5e.png)
+
+
+
+把本地的master分支推送到远程的不同名字的分支
+
+```java
+git push origin master:feature
+```
 

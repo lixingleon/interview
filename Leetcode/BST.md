@@ -172,3 +172,162 @@ class Solution {
 }
 ```
 
+
+
+#### [*501. 二叉搜索树中的众数](https://leetcode-cn.com/problems/find-mode-in-binary-search-tree/)
+
+给定一个有相同值的二叉搜索树（BST），找出 BST 中的所有众数（出现频率最高的元素）。
+
+假定 BST 有如下定义：
+
+结点左子树中所含结点的值小于等于当前结点的值
+结点右子树中所含结点的值大于等于当前结点的值
+左子树和右子树都是二叉搜索树
+例如：
+给定 BST [1,null,2,2],
+
+   1
+    \
+     2
+    /
+   2
+返回[2].
+
+提示：如果众数超过1个，不需考虑输出顺序
+
+进阶：你可以不使用额外的空间吗？（假设由递归产生的隐式调用栈的开销不被计算在内）
+
+
+
+**只遍历一遍数组就可以找出所有众数（出现频率最高的数）的方法 ,需要重点掌握！设置三个变量：pre，curCount， maxCount** 
+
+
+
+```java
+class Solution {
+    int pre, curCount, maxCount;
+    List<Integer> ans_list = new ArrayList<>();
+    public int[] findMode(TreeNode root) {
+        traverse(root);
+        int[] ans = new int[ans_list.size()];
+        for(int i = 0; i<ans_list.size(); i++){
+            ans[i] = ans_list.get(i);
+        } 
+        return ans;
+    }
+    private void traverse(TreeNode root){
+        if(root == null){
+            return;
+        }
+        traverse(root.left);
+        if(root.val == pre){
+            curCount++;
+        }
+        else{
+            curCount = 1;
+            pre = root.val;
+        }
+        if(curCount>maxCount){
+            maxCount = curCount;
+            ans_list.clear();
+            ans_list.add(root.val);
+        }
+        else if(curCount == maxCount){
+            ans_list.add(root.val);
+        }
+        traverse(root.right);
+    }
+}
+```
+
+
+
+#### *[450. 删除二叉搜索树中的节点](https://leetcode-cn.com/problems/delete-node-in-a-bst/)
+
+给定一个二叉搜索树的根节点 root 和一个值 key，删除二叉搜索树中的 key 对应的节点，并保证二叉搜索树的性质不变。返回二叉搜索树（有可能被更新）的根节点的引用。
+
+一般来说，删除节点可分为两个步骤：
+
+首先找到需要删除的节点；
+如果找到了，删除它。
+
+
+示例 1:
+
+
+
+输入：root = [5,3,6,2,4,null,7], key = 3
+输出：[5,4,6,2,null,null,7]
+解释：给定需要删除的节点值是 3，所以我们首先找到 3 这个节点，然后删除它。
+一个正确的答案是 [5,4,6,2,null,null,7], 如下图所示。
+另一个正确答案是 [5,2,6,null,4,null,7]。
+
+
+示例 2:
+
+输入: root = [5,3,6,2,4,null,7], key = 0
+输出: [5,3,6,2,4,null,7]
+解释: 二叉树不包含值为 0 的节点
+示例 3:
+
+输入: root = [], key = 0
+输出: []
+
+
+提示:
+
+节点数的范围 [0, 104].
+-105 <= Node.val <= 105
+节点值唯一
+root 是合法的二叉搜索树
+-105 <= key <= 105
+
+
+进阶： 要求算法时间复杂度为 O(h)，h 为树的高度。
+
+**使用迭代可以找到左子树中的最大值！**
+
+```java
+class Solution {
+    public TreeNode deleteNode(TreeNode root, int key) {
+        if(root == null){
+            return root;
+        }
+        
+        if(root.val == key){
+            return delete(root);
+        }
+        if(root.val>key){
+            root.left = deleteNode(root.left, key);
+        }
+        if(root.val<key){
+            root.right = deleteNode(root.right, key);
+        }
+        return root;
+
+    }
+    //用左子树中的最大值来顶替。
+    private TreeNode delete(TreeNode root){
+        if(root.left == null){
+            return root.right;
+        } 
+        if(root.right == null){
+            return root.left;
+        }
+        //用迭代找到左子树中的最大值
+        TreeNode p = root.left;
+        while(p.right!= null){
+            p = p.right;
+        }
+        //交换root跟左子树中的最大值
+        int tmp = p.val;
+        p.val = root.val;
+        root.val = tmp;
+        //重复利用主函数，把换下去的节点删掉
+        root.left = deleteNode(root.left, p.val);
+        return root;
+    }
+   
+}
+```
+

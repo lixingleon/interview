@@ -979,3 +979,574 @@ class Solution {
 }
 ```
 
+#### [875. 爱吃香蕉的珂珂](https://leetcode-cn.com/problems/koko-eating-bananas/)
+
+难度中等246收藏分享切换为英文接收动态反馈
+
+珂珂喜欢吃香蕉。这里有 `N` 堆香蕉，第 `i` 堆中有 `piles[i]` 根香蕉。警卫已经离开了，将在 `H` 小时后回来。
+
+珂珂可以决定她吃香蕉的速度 `K` （单位：根/小时）。每个小时，她将会选择一堆香蕉，从中吃掉 `K` 根。如果这堆香蕉少于 `K` 根，她将吃掉这堆的所有香蕉，然后这一小时内不会再吃更多的香蕉。 
+
+珂珂喜欢慢慢吃，但仍然想在警卫回来前吃掉所有的香蕉。
+
+返回她可以在 `H` 小时内吃掉所有香蕉的最小速度 `K`（`K` 为整数）。
+
+ 
+
+
+
+**示例 1：**
+
+```
+输入: piles = [3,6,7,11], H = 8
+输出: 4
+```
+
+**示例 2：**
+
+```
+输入: piles = [30,11,23,4,20], H = 5
+输出: 30
+```
+
+**示例 3：**
+
+```
+输入: piles = [30,11,23,4,20], H = 6
+输出: 23
+```
+
+ 
+
+**提示：**
+
+- `1 <= piles.length <= 10^4`
+- `piles.length <= H <= 10^9`
+- `1 <= piles[i] <= 10^9`
+
+通过次数55,139
+
+提交次数113,867
+
+**Java向上取整**
+
+```java
+Java里向上取整：
+    a/b+(a%b == 0?0:1)
+class Solution {
+    public int minEatingSpeed(int[] piles, int h) {
+        int max = Integer.MIN_VALUE;
+        for(int num: piles){
+            max = Math.max(max, num);
+        }
+        int left = 1, right = max;
+        while(left<right){
+            int mid = (right-left)/2+left;
+            if(canFinish(piles, mid, h)){
+                right = mid;
+            }
+            else{
+                left = mid+1;
+            }
+        }
+        return left;
+    }
+    private boolean canFinish(int[] piles, int speed, int h){
+        for(int num: piles){
+            h-= num/speed+ (num%speed == 0? 0:1);
+            if(h<0){
+               return false;
+            }
+
+        }
+        return true;
+    }
+}
+```
+
+#### [1011. 在 D 天内送达包裹的能力](https://leetcode-cn.com/problems/capacity-to-ship-packages-within-d-days/)
+
+难度中等425收藏分享切换为英文接收动态反馈
+
+传送带上的包裹必须在 `days` 天内从一个港口运送到另一个港口。
+
+传送带上的第 `i` 个包裹的重量为 `weights[i]`。每一天，我们都会按给出重量（`weights`）的顺序往传送带上装载包裹。我们装载的重量不会超过船的最大运载重量。
+
+返回能在 `days` 天内将传送带上的所有包裹送达的船的最低运载能力。
+
+ 
+
+**示例 1：**
+
+```
+输入：weights = [1,2,3,4,5,6,7,8,9,10], days = 5
+输出：15
+解释：
+船舶最低载重 15 就能够在 5 天内送达所有包裹，如下所示：
+第 1 天：1, 2, 3, 4, 5
+第 2 天：6, 7
+第 3 天：8
+第 4 天：9
+第 5 天：10
+
+请注意，货物必须按照给定的顺序装运，因此使用载重能力为 14 的船舶并将包装分成 (2, 3, 4, 5), (1, 6, 7), (8), (9), (10) 是不允许的。 
+```
+
+**示例 2：**
+
+```
+输入：weights = [3,2,2,4,1,4], days = 3
+输出：6
+解释：
+船舶最低载重 6 就能够在 3 天内送达所有包裹，如下所示：
+第 1 天：3, 2
+第 2 天：2, 4
+第 3 天：1, 4
+```
+
+**示例 3：**
+
+```
+输入：weights = [1,2,3,1,1], D = 4
+输出：3
+解释：
+第 1 天：1
+第 2 天：2
+第 3 天：3
+第 4 天：1, 1
+```
+
+ 
+
+**提示：**
+
+- `1 <= days <= weights.length <= 5 * 104`
+- `1 <= weights[i] <= 500`
+
+通过次数66,301
+
+提交次数106,082
+
+```java
+class Solution {
+    public int shipWithinDays(int[] weights, int days) {
+        int sum = 0;
+        int min = Integer.MAX_VALUE;
+        for(int weight: weights){
+            sum += weight;
+            min = Math.min(min, weight);
+        }
+        int left = min;
+        int right = sum;
+        while(left< right){
+            int mid = (right-left)/2+left;
+            if(canDO(weights, days, mid)){
+                right = mid;
+            }
+            else{
+                left = mid+1;
+            }
+        }
+        return left;
+    }
+    private boolean canDO(int[] weights, int days, int capacity){
+        int idx= 0;
+        for(int i = 0; i<days; i++){
+            int tmp = capacity;
+            while(idx<weights.length&& tmp- weights[idx]>=0){
+                tmp-= weights[idx];
+                idx++;
+
+                if(idx>=weights.length){
+                return true;
+                }
+            }
+            
+        }
+        return false;
+    }
+}
+```
+
+#### [4. 寻找两个正序数组的中位数](https://leetcode-cn.com/problems/median-of-two-sorted-arrays/)
+
+难度困难4924收藏分享切换为英文接收动态反馈
+
+给定两个大小分别为 `m` 和 `n` 的正序（从小到大）数组 `nums1` 和 `nums2`。请你找出并返回这两个正序数组的 **中位数** 。
+
+算法的时间复杂度应该为 `O(log (m+n))` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums1 = [1,3], nums2 = [2]
+输出：2.00000
+解释：合并数组 = [1,2,3] ，中位数 2
+```
+
+**示例 2：**
+
+```
+输入：nums1 = [1,2], nums2 = [3,4]
+输出：2.50000
+解释：合并数组 = [1,2,3,4] ，中位数 (2 + 3) / 2 = 2.5
+```
+
+**示例 3：**
+
+```
+输入：nums1 = [0,0], nums2 = [0,0]
+输出：0.00000
+```
+
+**示例 4：**
+
+```
+输入：nums1 = [], nums2 = [1]
+输出：1.00000
+```
+
+**示例 5：**
+
+```
+输入：nums1 = [2], nums2 = []
+输出：2.00000
+```
+
+ 
+
+**提示：**
+
+- `nums1.length == m`
+- `nums2.length == n`
+- `0 <= m <= 1000`
+- `0 <= n <= 1000`
+- `1 <= m + n <= 2000`
+- `-106 <= nums1[i], nums2[i] <= 106`
+
+
+
+```java
+
+class Solution {
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        int len1 = nums1.length;
+        int len2 = nums2.length;
+        return (findKth(nums1, 0, nums2, 0, (len1+len2+1)/2)+findKth(nums1, 0, nums2, 0, (len1+len2+2)/2))/2.0;
+    }
+    private int findKth(int[] nums1, int idx1, int[] nums2, int idx2, int k){
+        if(idx1>=nums1.length){
+            return nums2[idx2+k-1];
+        }
+        if(idx2>=nums2.length){
+            return nums1[idx1+k-1];
+        }
+        if(k == 1){
+            return Math.min(nums1[idx1], nums2[idx2]);
+        }
+        int half_kth_1 = idx1+k/2-1>=nums1.length? Integer.MAX_VALUE: nums1[idx1+k/2-1];
+        int half_kth_2 = idx2+k/2-1>=nums2.length? Integer.MAX_VALUE: nums2[idx2+k/2-1];
+        if(half_kth_1<half_kth_2){
+            idx1 += k/2;
+            return findKth(nums1, idx1, nums2, idx2, k-k/2);
+        }
+        else{
+            idx2 += k/2;
+            return findKth(nums1, idx1, nums2, idx2, k-k/2);
+        }
+    }
+}
+```
+
+#### [378. 有序矩阵中第 K 小的元素](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)
+
+难度中等747收藏分享切换为英文接收动态反馈
+
+给你一个 `n x n` 矩阵 `matrix` ，其中每行和每列元素均按升序排序，找到矩阵中第 `k` 小的元素。
+请注意，它是 **排序后** 的第 `k` 小元素，而不是第 `k` 个 **不同** 的元素。
+
+ 
+
+**示例 1：**
+
+```
+输入：matrix = [[1,5,9],[10,11,13],[12,13,15]], k = 8
+输出：13
+解释：矩阵中的元素为 [1,5,9,10,11,12,13,13,15]，第 8 小元素是 13
+```
+
+**示例 2：**
+
+```
+输入：matrix = [[-5]], k = 1
+输出：-5
+```
+
+ 
+
+**提示：**
+
+- `n == matrix.length`
+- `n == matrix[i].length`
+- `1 <= n <= 300`
+- `-109 <= matrix[i][j] <= 109`
+- 题目数据 **保证** `matrix` 中的所有行和列都按 **非递减顺序** 排列
+- `1 <= k <= n2`
+
+通过次数89,898
+
+提交次数142,363
+
+
+
+```java
+//判断二分法怎么调整left和right指针？
+//用另一个函数计算小于等于mid的数的个数
+class Solution {
+    int m;
+    int n;
+    int[][] matrix;
+    public int kthSmallest(int[][] matrix, int k) {
+        m = matrix.length;
+        n = matrix[0].length;
+        this.matrix = matrix;
+        int left = matrix[0][0];
+        int right = matrix[m-1][n-1];
+        while(left<right){
+            int mid = (right-left)/2+left;
+            if(lessEqualNum(mid)< k){
+                left = mid+1;
+            }
+            else{
+                right = mid;
+            }
+        }
+        return right;
+    }
+    //找到小于等于target的元素个数。
+    private int lessEqualNum(int target){
+        int i = m-1;
+        int j = 0;
+        int count = 0;
+        while(i>=0 && j<n){
+            while(i>=0 && matrix[i][j]>target){
+                i--;
+            }
+            count+= i+1;
+            j++;
+        }
+        return count;
+    }
+
+}
+```
+
+
+
+#### [668. 乘法表中第k小的数](https://leetcode-cn.com/problems/kth-smallest-number-in-multiplication-table/)
+
+难度困难169收藏分享切换为英文接收动态反馈
+
+几乎每一个人都用 [乘法表](https://baike.baidu.com/item/乘法表)。但是你能在乘法表中快速找到第`k`小的数字吗？
+
+给定高度`m` 、宽度`n` 的一张 `m * n`的乘法表，以及正整数`k`，你需要返回表中第`k` 小的数字。
+
+**例 1：**
+
+```
+输入: m = 3, n = 3, k = 5
+输出: 3
+解释: 
+乘法表:
+1	2	3
+2	4	6
+3	6	9
+
+第5小的数字是 3 (1, 2, 2, 3, 3).
+```
+
+**例 2：**
+
+```
+输入: m = 2, n = 3, k = 6
+输出: 6
+解释: 
+乘法表:
+1	2	3
+2	4	6
+
+第6小的数字是 6 (1, 2, 2, 3, 4, 6).
+```
+
+**注意：**
+
+1. `m` 和 `n` 的范围在 [1, 30000] 之间。
+2. `k` 的范围在 [1, m * n] 之间。
+
+```java
+class Solution {
+    int m;
+    int n;
+    public int findKthNumber(int m, int n, int k) {
+        this.m = m;
+        this.n = n;
+        int left = 1;
+        int right = m*n;
+        while(left<right){
+            int mid = (right-left)/2+left;
+            if(lessEqualCount(mid)<k){
+                left = mid+1;
+            }
+            else{
+                right = mid;
+            }
+        }
+        return right;
+    }
+    此处相对于378题，有一个小小的优化：
+    i代表行数, target/i就是这一行小于等于target的元素数量。
+    private int lessEqualCount(int target){
+        int count = 0;
+        for(int i = 1; i<=m; i++){
+            count+= Math.min(target/i, n);
+        }
+        return count;
+    }
+}
+```
+
+
+
+#### [719. 找出第 k 小的距离对](https://leetcode-cn.com/problems/find-k-th-smallest-pair-distance/)
+
+难度困难222收藏分享切换为英文接收动态反馈
+
+给定一个整数数组，返回所有数对之间的第 k 个最小**距离**。一对 (A, B) 的距离被定义为 A 和 B 之间的绝对差值。
+
+**示例 1:**
+
+```
+输入：
+nums = [1,3,1]
+k = 1
+输出：0 
+解释：
+所有数对如下：
+(1,3) -> 2
+(1,1) -> 0
+(3,1) -> 2
+因此第 1 个最小距离的数对是 (1,1)，它们之间的距离为 0。
+```
+
+**提示:**
+
+1. `2 <= len(nums) <= 10000`.
+2. `0 <= nums[i] < 1000000`.
+3. `1 <= k <= len(nums) * (len(nums) - 1) / 2`.
+
+
+
+```java
+class Solution {
+    public int smallestDistancePair(int[] nums, int k) {
+        Arrays.sort(nums);
+        int n = nums.length;
+        int right = nums[n-1]-nums[0];
+        //这里left应该是0而不是nums[1]-nums[0]
+        //因为nums[1]和nums[0]最小不代表它们的差最小。
+        int left = 0;
+        while(left<right){
+            int mid = (right-left)/2+left;
+            if(lessEqualCount(mid, nums)<k){
+                left = mid+1;
+            }
+            else{
+                right = mid;
+            }
+        }
+        return right;
+    }
+    //双指针法：找到一个数组中有多少个距离对.
+    private int lessEqualCount(int target, int[] nums){
+        int i = 0;
+        int j = 1;
+        int count = 0;
+        while(i<j && j<nums.length){
+            while(i<j && nums[j]-nums[i]>target){
+                i++;
+            }
+            count+= j-i;
+            j++;
+        }
+        return count;
+    }
+}
+```
+
+#### [786. 第 K 个最小的素数分数](https://leetcode-cn.com/problems/k-th-smallest-prime-fraction/)
+
+难度困难206收藏分享切换为英文接收动态反馈
+
+给你一个按递增顺序排序的数组 `arr` 和一个整数 `k` 。数组 `arr` 由 `1` 和若干 **素数** 组成，且其中所有整数互不相同。
+
+对于每对满足 `0 <= i < j < arr.length` 的 `i` 和 `j` ，可以得到分数 `arr[i] / arr[j]` 。
+
+那么第 `k` 个最小的分数是多少呢? 以长度为 `2` 的整数数组返回你的答案, 这里 `answer[0] == arr[i]` 且 `answer[1] == arr[j]` 。
+
+**示例 1：**
+
+```
+输入：arr = [1,2,3,5], k = 3
+输出：[2,5]
+解释：已构造好的分数,排序后如下所示: 
+1/5, 1/3, 2/5, 1/2, 3/5, 2/3
+很明显第三个最小的分数是 2/5
+```
+
+**示例 2：**
+
+```
+输入：arr = [1,7], k = 1
+输出：[1,7]
+```
+
+ 
+
+**提示：**
+
+- `2 <= arr.length <= 1000`
+- `1 <= arr[i] <= 3 * 104`
+- `arr[0] == 1`
+- `arr[i]` 是一个 **素数** ，`i > 0`
+- `arr` 中的所有数字 **互不相同** ，且按 **严格递增** 排序
+- `1 <= k <= arr.length * (arr.length - 1) / 2`
+
+
+
+```java
+通过优先队列来做多路合并。
+小顶堆，每次取的都是最小的值，第k次取的就是第k小的值了。
+二分暂时
+class Solution {
+    public int[] kthSmallestPrimeFraction(int[] arr, int k) {
+        PriorityQueue<int[]> queue = new PriorityQueue<>((e1, e2) ->{
+            return Double.compare(arr[e1[0]]*1.0/arr[e1[1]], arr[e2[0]]*1.0/arr[e2[1]]);
+        });
+        for(int i = 1; i<arr.length; i++){
+            queue.add(new int[]{0, i});
+        }
+        while(k>=2){
+            int[] smallest = queue.poll();
+            if(smallest[0]+1<smallest[1]){
+                queue.add(new int[]{smallest[0]+1, smallest[1]});
+            }
+            k--;
+        }
+        int[] res = queue.peek();
+        return new int[]{arr[res[0]], arr[res[1]]};
+    }
+}
+```
+

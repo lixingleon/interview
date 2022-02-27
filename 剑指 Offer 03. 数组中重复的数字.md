@@ -335,3 +335,68 @@ class Solution {
 }
 ```
 
+
+
+#### [713. 乘积小于K的子数组](https://leetcode-cn.com/problems/subarray-product-less-than-k/)
+
+难度中等348收藏分享切换为英文接收动态反馈
+
+给定一个正整数数组 `nums`和整数 `k` 。
+
+请找出该数组内乘积小于 `k` 的连续的子数组的个数。
+
+ 
+
+**示例 1:**
+
+```
+输入: nums = [10,5,2,6], k = 100
+输出: 8
+解释: 8个乘积小于100的子数组分别为: [10], [5], [2], [6], [10,5], [5,2], [2,6], [5,2,6]。
+需要注意的是 [10,5,2] 并不是乘积小于100的子数组。
+```
+
+**示例 2:**
+
+```
+输入: nums = [1,2,3], k = 0
+输出: 0
+```
+
+ 
+
+**提示:** 
+
+- `1 <= nums.length <= 3 * 104`
+- `1 <= nums[i] <= 1000`
+- `0 <= k <= 106`
+
+通过次数34,456
+
+提交次数79,451
+
+```java
+class Solution {
+    public int numSubarrayProductLessThanK(int[] nums, int k) {
+        if(k == 0 || k == 1){
+            return 0;
+        }
+        int multiple = 1;
+        int left = 0;
+        int count = 0;
+        //每加进一个数，就把以这个数结尾的子数组乘积都看一遍，小于k的就加到count中去。
+        //因为小于k的数组的子数组的乘积都小于k，所以每次循环只需要O（1）复杂度
+        //所以总体复杂度只有O（n）
+        for(int right = 0; right<nums.length; right++){
+            multiple *= nums[right];
+            while(multiple>=k){
+                multiple/= nums[left];
+                left++;
+            }
+            count+= right-left+1;
+        }
+        return count;
+    }
+}
+```
+

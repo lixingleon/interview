@@ -577,7 +577,7 @@ class Solution {
 - `nums` 中的所有元素 **互不相同**
 - `1 <= target <= 1000`
 
- 
+
 
 **进阶：**如果给定的数组中含有负数会发生什么？问题会产生何种变化？如果允许负数出现，需要向题目中添加哪些限制条件？
 
@@ -737,6 +737,213 @@ class Solution {
             used[i] = false;
             path.removeLast();
         }
+    }
+}
+```
+
+
+
+#### [752. 打开转盘锁](https://leetcode-cn.com/problems/open-the-lock/)
+
+难度中等451收藏分享切换为英文接收动态反馈
+
+你有一个带有四个圆形拨轮的转盘锁。每个拨轮都有10个数字： `'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'` 。每个拨轮可以自由旋转：例如把 `'9'` 变为 `'0'`，`'0'` 变为 `'9'` 。每次旋转都只能旋转一个拨轮的一位数字。
+
+锁的初始数字为 `'0000'` ，一个代表四个拨轮的数字的字符串。
+
+列表 `deadends` 包含了一组死亡数字，一旦拨轮的数字和列表里的任何一个元素相同，这个锁将会被永久锁定，无法再被旋转。
+
+字符串 `target` 代表可以解锁的数字，你需要给出解锁需要的最小旋转次数，如果无论如何不能解锁，返回 `-1` 。
+
+ 
+
+**示例 1:**
+
+```
+输入：deadends = ["0201","0101","0102","1212","2002"], target = "0202"
+输出：6
+解释：
+可能的移动序列为 "0000" -> "1000" -> "1100" -> "1200" -> "1201" -> "1202" -> "0202"。
+注意 "0000" -> "0001" -> "0002" -> "0102" -> "0202" 这样的序列是不能解锁的，
+因为当拨动到 "0102" 时这个锁就会被锁定。
+
+```
+
+**示例 2:**
+
+```
+输入: deadends = ["8888"], target = "0009"
+输出：1
+解释：把最后一位反向旋转一次即可 "0000" -> "0009"。
+
+```
+
+**示例 3:**
+
+```
+输入: deadends = ["8887","8889","8878","8898","8788","8988","7888","9888"], target = "8888"
+输出：-1
+解释：无法旋转到目标数字且不被锁定。
+
+```
+
+ 
+
+**提示：**
+
+- `1 <= deadends.length <= 500`
+- `deadends[i].length == 4`
+- `target.length == 4`
+- `target` **不在** `deadends` 之中
+- `target` 和 `deadends[i]` 仅由若干位数字组成
+
+```java
+//需要一个queue，一个visited集合。
+//对bfs的每一层
+    //对每一层的每个元素
+        //对每个元素的每个char
+        //判断一下是不是target，如果是，结束程序。
+        //如果不是，将元素加到下层bfs中。
+class Solution {
+    public int openLock(String[] deadends, String target) {
+        HashSet<String> visited = new HashSet<>();
+        HashSet<String> deadendsSet = new HashSet<>(Arrays.asList(deadends));
+        LinkedList<String> queue = new LinkedList<>();
+        String start = "0000";
+        if(deadendsSet.contains(start) || deadendsSet.contains(target)){
+            return -1;
+        }
+        queue.add(start);
+        int step = 0;
+        while(!queue.isEmpty()){
+            int size = queue.size();
+            for(int i = 0; i<size; i++){
+                String cur = queue.removeFirst();
+                if(cur.equals(target)){
+                    return step;
+                }
+                List<String> nexts = buildNexts(cur);
+                for(String next: nexts){
+                    if(!visited.contains(next)&& !deadendsSet.contains(next)){
+                        queue.add(next);
+                        visited.add(next);
+                    }
+                }
+            }
+            step++;
+        }
+        return -1;
+    }
+    private List<String> buildNexts(String key){
+        List<String> res = new ArrayList<>();
+        char[] chars = key.toCharArray();
+        for(int i = 0; i<chars.length; i++){
+            char origin= chars[i];
+            chars[i] = chars[i]!='9'? (char)(chars[i]+1): '0';
+            res.add(String.valueOf(chars));
+            chars[i] = origin;
+            chars[i] = chars[i]!='0'? (char)(chars[i]-1): '9';
+            res.add(String.valueOf(chars));
+            chars[i] = origin;
+        }
+        return res;
+    }
+}
+```
+
+
+
+#### [127. 单词接龙](https://leetcode-cn.com/problems/word-ladder/)
+
+难度困难962收藏分享切换为英文接收动态反馈
+
+字典 `wordList` 中从单词 `beginWord`* *和 `endWord` 的 **转换序列 **是一个按下述规格形成的序列 `beginWord -> s1 -> s2 -> ... -> sk`：
+
+- 每一对相邻的单词只差一个字母。
+-  对于 `1 <= i <= k` 时，每个 `si` 都在 `wordList` 中。注意， `beginWord`* *不需要在 `wordList` 中。
+- `sk == endWord`
+
+给你两个单词* *`beginWord`* *和 `endWord` 和一个字典 `wordList` ，返回 *从 beginWord 到 endWord 的 \**最短转换序列** 中的 **单词数目*** 。如果不存在这样的转换序列，返回 `0` 。
+
+**示例 1：**
+
+```
+输入：beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]
+输出：5
+解释：一个最短转换序列是 "hit" -> "hot" -> "dot" -> "dog" -> "cog", 返回它的长度 5。
+
+```
+
+**示例 2：**
+
+```
+输入：beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log"]
+输出：0
+解释：endWord "cog" 不在字典中，所以无法进行转换。
+```
+
+ 
+
+**提示：**
+
+- `1 <= beginWord.length <= 10`
+- `endWord.length == beginWord.length`
+- `1 <= wordList.length <= 5000`
+- `wordList[i].length == beginWord.length`
+- `beginWord`、`endWord` 和 `wordList[i]` 由小写英文字母组成
+- `beginWord != endWord`
+- `wordList` 中的所有字符串 **互不相同**
+
+
+
+```java
+//在图的两个端点之间找最短路径
+//图的每条边的权重都是1，意味着两个单词之间只有一个字母有差别
+//从beginWord开始，看最终到endWord的路径有多长,也就是要经过几次变换
+class Solution {
+    public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+        HashSet<String> wordSet = new HashSet<>(wordList);
+        if(!wordSet.contains(endWord)){
+            return 0;
+        }
+        wordSet.remove(beginWord);
+
+        LinkedList<String> queue = new LinkedList<>();
+        queue.add(beginWord);
+        HashSet<String> visited = new HashSet<>();
+        visited.add(beginWord);
+
+        int step = 1;
+        while(!queue.isEmpty()){
+            int curSize = queue.size();
+            for(int i = 0; i<curSize; i++){
+                String curWord = queue.removeFirst();
+                char[] curWordCharArray = curWord.toCharArray();
+                for(int j = 0; j<curWord.length(); j++){
+                    char origin = curWordCharArray[j];
+                    for(char k = 'a'; k<='z'; k++){
+                        if(k == origin){
+                            continue;
+                        }
+                        curWordCharArray[j] = k;
+                        String newWord = String.valueOf(curWordCharArray);
+                        if(visited.contains(newWord)){
+                            continue;
+                        }
+                        if(newWord.equals(endWord)){
+                            return step+1;
+                        }
+                        if(wordSet.contains(newWord)){
+                            queue.add(newWord);
+                            visited.add(newWord);
+                        }
+                    }
+                    curWordCharArray[j] = origin;
+                }
+            }
+            step++;
+        }
+        return 0;
     }
 }
 ```

@@ -400,3 +400,157 @@ class Solution {
 }
 ```
 
+#### [84. 柱状图中最大的矩形](https://leetcode-cn.com/problems/largest-rectangle-in-histogram/)
+
+难度困难1771收藏分享切换为英文接收动态反馈
+
+给定 *n* 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
+
+求在该柱状图中，能够勾勒出来的矩形的最大面积。
+
+ 
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/01/04/histogram.jpg)
+
+```
+输入：heights = [2,1,5,6,2,3]
+输出：10
+解释：最大的矩形为图中红色区域，面积为 10
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/04/histogram-1.jpg)
+
+```
+输入： heights = [2,4]
+输出： 4
+```
+
+ 
+
+**提示：**
+
+- `1 <= heights.length <=105`
+- `0 <= heights[i] <= 104`
+
+```java
+//核心思想就是找到一个柱形左边第一个小于它的，右边第一个小于它的，取长度乘以高度即可。
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        int[] newHeights = new int[heights.length+2];
+        System.arraycopy(heights, 0, newHeights, 1, heights.length);
+        ArrayDeque<Integer> deque = new ArrayDeque<>();
+        int max = 0;
+        for(int i = 0; i<newHeights.length; i++){
+            while(!deque.isEmpty()&& newHeights[i]<newHeights[deque.peekLast()]){
+                int idx = deque.removeLast();
+                int height = newHeights[idx];
+                int len = i-deque.peekLast()-1;
+                max = Math.max(max, height* len);
+            }
+            deque.addLast(i);
+        }
+        return  max;
+
+    }
+}
+```
+
+
+
+#### [85. 最大矩形](https://leetcode-cn.com/problems/maximal-rectangle/)
+
+难度困难1182收藏分享切换为英文接收动态反馈
+
+给定一个仅包含 `0` 和 `1` 、大小为 `rows x cols` 的二维二进制矩阵，找出只包含 `1` 的最大矩形，并返回其面积。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/14/maximal.jpg)
+
+```
+输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+输出：6
+解释：最大矩形如上图所示。
+```
+
+**示例 2：**
+
+```
+输入：matrix = []
+输出：0
+```
+
+**示例 3：**
+
+```
+输入：matrix = [["0"]]
+输出：0
+```
+
+**示例 4：**
+
+```
+输入：matrix = [["1"]]
+输出：1
+```
+
+**示例 5：**
+
+```
+输入：matrix = [["0","0"]]
+输出：0
+```
+
+ 
+
+**提示：**
+
+- `rows == matrix.length`
+- `cols == matrix[0].length`
+- `1 <= row, cols <= 200`
+- `matrix[i][j]` 为 `'0'` 或 `'1'`
+
+```java
+class Solution {
+    public int maximalRectangle(char[][] matrix) {
+        int[] heights = new int[matrix[0].length];
+        int max = 0;
+        for(int i = 0; i<matrix.length; i++){
+            for(int j = 0; j<matrix[0].length; j++){
+                if(matrix[i][j] == '1'){
+                    heights[j] += 1;
+                }
+                else{
+                    heights[j] = 0;
+                }
+            }
+            int val = findArea(heights);
+            max = Math.max(max, val);
+        }
+        return max;
+    }
+    private int findArea(int[] heights){
+        int[] newHeights = new int[heights.length+2];
+        System.arraycopy(heights, 0, newHeights, 1, heights.length);
+        LinkedList<Integer> indexes = new LinkedList<>();
+        int max = 0;
+        for(int i = 0; i<newHeights.length; i++){
+            while(!indexes.isEmpty() && newHeights[i]<newHeights[indexes.peekLast()]){
+                int idx = indexes.removeLast();
+                int h = newHeights[idx];
+                int len = i- indexes.peekLast()-1;
+                max = Math.max(max, len* h);
+            }
+            indexes.add(i);
+        }
+        return max;
+    }
+}
+```
+

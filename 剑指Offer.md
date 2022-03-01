@@ -917,3 +917,137 @@ class Solution {
 }
 ```
 
+
+
+#### [5. 最长回文子串](https://leetcode-cn.com/problems/longest-palindromic-substring/)
+
+难度中等4772收藏分享切换为英文接收动态反馈
+
+给你一个字符串 `s`，找到 `s` 中最长的回文子串。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。
+```
+
+**示例 2：**
+
+```
+输入：s = "cbbd"
+输出："bb"
+```
+
+ 
+
+**提示：**
+
+- `1 <= s.length <= 1000`
+- `s` 仅由数字和英文字母组成
+
+通过次数898,393
+
+提交次数2,478,302
+
+```java
+class Solution {
+    public String longestPalindrome(String s) {
+        if(s.length()<2){
+            return s;
+        }
+        boolean[][] dp = new boolean[s.length()][s.length()];
+        for(int i = 0; i<s.length(); i++){
+            dp[i][i] = true;
+        }
+        int max = 1;
+        int begin = 0;
+        for(int L = 2; L<=s.length(); L++){
+            for(int i = 0; i<s.length(); i++){
+                int j = i+L-1;
+                //如果越过边界就break
+                if(j>=s.length()){
+                    break;
+                }
+                //给dp[i][j]赋值
+                if(s.charAt(i) == s.charAt(j)){
+                    if(L == 2){
+                        dp[i][j] = true;
+                    }
+                    else{
+                        dp[i][j] = dp[i+1][j-1];
+                    }
+                }
+                //更新最大值
+                if(dp[i][j]&& j-i+1>max){
+                    max = j-i+1;
+                    begin = i;
+                }
+            }
+        }
+        return s.substring(begin, begin+max);
+    }
+}
+```
+
+#### [516. 最长回文子序列](https://leetcode-cn.com/problems/longest-palindromic-subsequence/)
+
+难度中等731收藏分享切换为英文接收动态反馈
+
+给你一个字符串 `s` ，找出其中最长的回文子序列，并返回该序列的长度。
+
+子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "bbbab"
+输出：4
+解释：一个可能的最长回文子序列为 "bbbb" 。
+```
+
+**示例 2：**
+
+```
+输入：s = "cbbd"
+输出：2
+解释：一个可能的最长回文子序列为 "bb" 。
+```
+
+ 
+
+**提示：**
+
+- `1 <= s.length <= 1000`
+- `s` 仅由小写英文字母组成
+
+通过次数104,018
+
+提交次数157,400
+
+```java
+class Solution {
+    public int longestPalindromeSubseq(String s) {
+        int n = s.length();
+        int[][] dp = new int[n][n];
+        for(int i = n-1; i>=0; i--){
+            dp[i][i] = 1;
+            for(int j = i+1; j<n; j++){
+                if(s.charAt(i) == s.charAt(j)){
+                    dp[i][j] = dp[i+1][j-1]+2;
+                }
+                else{
+                    dp[i][j] = Math.max(dp[i][j-1], dp[i+1][j]);
+                }
+            }
+        }
+        return dp[0][n-1];
+    }
+}
+```
+

@@ -212,7 +212,6 @@ class Solution {
    }
    ```
 
-   
 
 2. 快排
 
@@ -247,7 +246,6 @@ class Solution {
    }
    ```
 
-   
 
 # [169. 多数元素](https://leetcode-cn.com/problems/majority-element/)
 
@@ -331,6 +329,311 @@ class Solution {
         if(B == null) return true;
         if(A == null || A.val != B.val) return false;
         return isEqual(A.left, B.left)&& isEqual(A.right, B.right);
+    }
+}
+```
+
+
+#### [56. 合并区间](https://leetcode-cn.com/problems/merge-intervals/)
+
+难度中等1339收藏分享切换为英文接收动态反馈
+
+以数组 `intervals` 表示若干个区间的集合，其中单个区间为 `intervals[i] = [starti, endi]` 。请你合并所有重叠的区间，并返回 *一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间* 。
+
+ 
+
+**示例 1：**
+
+```
+输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+输出：[[1,6],[8,10],[15,18]]
+解释：区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+
+```
+
+**示例 2：**
+
+```
+输入：intervals = [[1,4],[4,5]]
+输出：[[1,5]]
+解释：区间 [1,4] 和 [4,5] 可被视为重叠区间。
+```
+
+ 
+
+**提示：**
+
+- `1 <= intervals.length <= 104`
+- `intervals[i].length == 2`
+- `0 <= starti <= endi <= 104`
+
+```java
+//思路是对的，但实现方式还有更简洁的。
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        if(intervals.length == 1){
+            return intervals;
+        }
+        Arrays.sort(intervals, (interval1, interval2) ->interval1[0]-interval2[0]);
+        List<List<Integer>> res = new ArrayList<>();
+        LinkedList<Integer> cur = buildList(intervals[0]);
+        for(int i = 1; i<intervals.length; i++){
+            LinkedList<Integer> toMerge = buildList(intervals[i]);
+            if(cur.peekLast()>= toMerge.peekFirst()){
+                int curLast = cur.removeLast();
+                int toMergeLast = toMerge.removeLast();
+                cur.add(Math.max(curLast, toMergeLast));
+            }
+            else{
+                res.add(new ArrayList<>(cur));
+                cur = toMerge;
+            }
+            if(i == intervals.length-1){
+                    res.add(new ArrayList<>(cur));
+                }
+        }
+        int[][] result = new int[res.size()][2];
+        for(int i = 0; i<res.size(); i++){
+            for(int j = 0; j<2; j++){
+                result[i][j] = res.get(i).get(j);
+            }
+        }
+        return result;
+    }
+    private LinkedList<Integer> buildList(int[] nums){
+        LinkedList<Integer> res = new LinkedList<>();
+        for(int num: nums){
+            res.add(num);
+        }
+        return res;
+    }
+}
+//更简洁版本
+//这个方案将intervals数组直接赋值到res数组，省去了中间的步骤。
+//并且用idx == -1 来跳过一开始当res数组为空的情况
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        if(intervals.length == 1){
+            return intervals;
+        }
+        Arrays.sort(intervals, (interval1, interval2) ->interval1[0]-interval2[0]);
+        int[][] res = new int[intervals.length][2];
+        int idx = -1;
+        for(int i = 0; i<intervals.length; i++){
+            if(idx == -1 || intervals[i][0]>res[idx][1]){
+                idx++;
+                res[idx] = intervals[i];
+            }
+            else{
+                res[idx][1] = Math.max(res[idx][1], intervals[i][1]);
+            }
+        }
+       
+        return Arrays.copyOf(res, idx+1);
+    }
+}
+```
+
+
+
+
+
+#### [剑指 Offer II 087. 复原 IP ](https://leetcode-cn.com/problems/0on3uN/)
+
+难度中等16收藏分享切换为英文接收动态反馈
+
+给定一个只包含数字的字符串 `s` ，用以表示一个 IP 地址，返回所有可能从 `s` 获得的 **有效 IP 地址 **。你可以按任何顺序返回答案。
+
+**有效 IP 地址** 正好由四个整数（每个整数位于 0 到 255 之间组成，且不能含有前导 `0`），整数之间用 `'.'` 分隔。
+
+例如："0.1.2.201" 和 "192.168.1.1" 是 **有效** IP 地址，但是 "0.011.255.245"、"192.168.1.312" 和 "192.168@1.1" 是 **无效** IP 地址。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "25525511135"
+输出：["255.255.11.135","255.255.111.35"]
+
+```
+
+**示例 2：**
+
+```
+输入：s = "0000"
+输出：["0.0.0.0"]
+
+```
+
+**示例 3：**
+
+```
+输入：s = "1111"
+输出：["1.1.1.1"]
+
+```
+
+**示例 4：**
+
+```
+输入：s = "010010"
+输出：["0.10.0.10","0.100.1.0"]
+
+```
+
+**示例 5：**
+
+```
+输入：s = "10203040"
+输出：["10.20.30.40","102.0.30.40","10.203.0.40"]
+
+```
+
+ 
+
+**提示：**
+
+- `0 <= s.length <= 3000`
+- `s` 仅由数字组成
+
+```java
+//尽早剪枝的方式没想出来
+//每个for循环有三次循环
+//四个segment都得到以后用String.join('.' segments)
+class Solution {
+    public List<String> restoreIpAddresses(String s) {
+        List<String> res = new ArrayList<>();
+        LinkedList<String> path = new LinkedList<>(); 
+        findIPs(res, path, 0, 0, s);
+        return res;
+    }
+    private void findIPs(List<String> res, LinkedList<String> path, int segmentNum, int begin, String s){
+        //尽早剪枝
+        if(begin+3*(4-segmentNum)<s.length() || begin+4-segmentNum>s.length()){
+            return;
+        }
+
+        if(segmentNum == 4){
+            res.add(String.join(".", path));
+            return;
+        }
+
+        for(int i = 0; i<3; i++){
+            if(i+begin>=s.length()){
+                break;
+            }
+            if(isValidSegment(s, begin, begin+i+1)){
+                path.add(s.substring(begin, begin+i+1));
+                findIPs(res, path, segmentNum+1, begin+i+1, s);
+                path.removeLast();
+            }
+
+        }
+
+    }
+    private boolean isValidSegment(String s, int begin, int end){
+        //注意这里 == ‘0’ 而不是 == 0 是char跟char比较，不是char跟int比较。
+        if(end-begin>1 && s.charAt(begin) == '0'){
+            return false;
+        }
+        int ret = Integer.parseInt(s.substring(begin, end));
+        return ret>255? false: true;
+    }
+}
+```
+
+
+
+#### [剑指 Offer II 077. 链表排序](https://leetcode-cn.com/problems/7WHec2/)
+
+难度中等31收藏分享切换为英文接收动态反馈
+
+给定链表的头结点 `head` ，请将其按 **升序** 排列并返回 **排序后的链表** 。
+
+
+
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/14/sort_list_1.jpg)
+
+```
+输入：head = [4,2,1,3]
+输出：[1,2,3,4]
+
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/14/sort_list_2.jpg)
+
+```
+输入：head = [-1,5,3,4,0]
+输出：[-1,0,3,4,5]
+
+```
+
+**示例 3：**
+
+```
+输入：head = []
+输出：[]
+
+```
+
+ 
+
+**提示：**
+
+- 链表中节点的数目在范围 `[0, 5 * 104]` 内
+- `-105 <= Node.val <= 105`
+
+ 
+
+**进阶：**你可以在 `O(n log n)` 时间复杂度和常数级空间复杂度下，对链表进行排序吗？
+
+ 
+
+注意：本题与主站 148 题相同：<https://leetcode-cn.com/problems/sort-list/>
+
+```java
+class Solution {
+    public ListNode sortList(ListNode head) {
+        return mergeSort(head);
+    }
+    private ListNode mergeSort(ListNode head){
+        if(head == null || head.next == null){
+            return head;
+        }
+        //fast指针先走一格，这样能让slow指向中点的前一个节点，就可以分割slow了
+        ListNode fast = head.next;
+        ListNode slow = head;
+        while(fast!= null && fast.next!= null){
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        ListNode node2 = mergeSort(slow.next);
+        slow.next = null;
+        ListNode node1 = mergeSort(head);
+        return merge(node1, node2);
+
+    }
+    private ListNode merge(ListNode n1, ListNode n2){
+        if(n1 == null){
+            return n2;
+        }
+        if(n2 == null){
+            return n1;
+        }
+        if(n1.val<=n2.val){
+            n1.next = merge(n1.next, n2);
+            return n1;
+        }
+        else{
+            n2.next = merge(n2.next, n1);
+            return n2;
+        }
     }
 }
 ```

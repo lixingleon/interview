@@ -334,7 +334,6 @@ class Solution {
 ```
 
 
-
 #### [56. 合并区间](https://leetcode-cn.com/problems/merge-intervals/)
 
 难度中等1339收藏分享切换为英文接收动态反馈
@@ -553,7 +552,7 @@ class Solution {
 给定链表的头结点 `head` ，请将其按 **升序** 排列并返回 **排序后的链表** 。
 
 
- 
+
 
 **示例 1：**
 
@@ -635,6 +634,500 @@ class Solution {
             n2.next = merge(n2.next, n1);
             return n2;
         }
+    }
+}
+```
+
+#### [ 713. 乘积小于K的子数组](https://leetcode-cn.com/problems/subarray-product-less-than-k/)
+
+难度中等348收藏分享切换为英文接收动态反馈
+
+给定一个正整数数组 `nums`和整数 `k` 。
+
+请找出该数组内乘积小于 `k` 的连续的子数组的个数。
+
+ 
+
+**示例 1:**
+
+```
+输入: nums = [10,5,2,6], k = 100
+输出: 8
+解释: 8个乘积小于100的子数组分别为: [10], [5], [2], [6], [10,5], [5,2], [2,6], [5,2,6]。
+需要注意的是 [10,5,2] 并不是乘积小于100的子数组。
+```
+
+**示例 2:**
+
+```
+输入: nums = [1,2,3], k = 0
+输出: 0
+```
+
+ 
+
+**提示:** 
+
+- `1 <= nums.length <= 3 * 104`
+- `1 <= nums[i] <= 1000`
+- `0 <= k <= 106`
+
+通过次数34,456
+
+提交次数79,451
+
+```
+class Solution {
+    public int numSubarrayProductLessThanK(int[] nums, int k) {
+        if(k == 0 || k == 1){
+            return 0;
+        }
+        int multiple = 1;
+        int left = 0;
+        int count = 0;
+        //每加进一个数，就把以这个数结尾的子数组乘积都看一遍，小于k的就加到count中去。
+        //因为小于k的数组的子数组的乘积都小于k，所以每次循环只需要O（1）复杂度
+        //所以总体复杂度只有O（n）
+        for(int right = 0; right<nums.length; right++){
+            multiple *= nums[right];
+            while(multiple>=k){
+                multiple/= nums[left];
+                left++;
+            }
+            count+= right-left+1;
+        }
+        return count;
+    }
+}
+```
+
+#### [84. 柱状图中最大的矩形](https://leetcode-cn.com/problems/largest-rectangle-in-histogram/)
+
+难度困难1771收藏分享切换为英文接收动态反馈
+
+给定 *n* 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
+
+求在该柱状图中，能够勾勒出来的矩形的最大面积。
+
+ 
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/01/04/histogram.jpg)
+
+```
+输入：heights = [2,1,5,6,2,3]
+输出：10
+解释：最大的矩形为图中红色区域，面积为 10
+```
+
+**示例 2：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/04/histogram-1.jpg)
+
+```
+输入： heights = [2,4]
+输出： 4
+```
+
+ 
+
+**提示：**
+
+- `1 <= heights.length <=105`
+- `0 <= heights[i] <= 104`
+
+```
+//核心思想就是找到一个柱形左边第一个小于它的，右边第一个小于它的，取长度乘以高度即可。
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        int[] newHeights = new int[heights.length+2];
+        System.arraycopy(heights, 0, newHeights, 1, heights.length);
+        ArrayDeque<Integer> deque = new ArrayDeque<>();
+        int max = 0;
+        for(int i = 0; i<newHeights.length; i++){
+            while(!deque.isEmpty()&& newHeights[i]<newHeights[deque.peekLast()]){
+                int idx = deque.removeLast();
+                int height = newHeights[idx];
+                int len = i-deque.peekLast()-1;
+                max = Math.max(max, height* len);
+            }
+            deque.addLast(i);
+        }
+        return  max;
+
+    }
+}
+```
+
+
+
+#### [85. 最大矩形](https://leetcode-cn.com/problems/maximal-rectangle/)
+
+难度困难1182收藏分享切换为英文接收动态反馈
+
+给定一个仅包含 `0` 和 `1` 、大小为 `rows x cols` 的二维二进制矩阵，找出只包含 `1` 的最大矩形，并返回其面积。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/14/maximal.jpg)
+
+```
+输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+输出：6
+解释：最大矩形如上图所示。
+```
+
+**示例 2：**
+
+```
+输入：matrix = []
+输出：0
+```
+
+**示例 3：**
+
+```
+输入：matrix = [["0"]]
+输出：0
+```
+
+**示例 4：**
+
+```
+输入：matrix = [["1"]]
+输出：1
+```
+
+**示例 5：**
+
+```
+输入：matrix = [["0","0"]]
+输出：0
+```
+
+ 
+
+**提示：**
+
+- `rows == matrix.length`
+- `cols == matrix[0].length`
+- `1 <= row, cols <= 200`
+- `matrix[i][j]` 为 `'0'` 或 `'1'`
+
+```
+class Solution {
+    public int maximalRectangle(char[][] matrix) {
+        int[] heights = new int[matrix[0].length];
+        int max = 0;
+        for(int i = 0; i<matrix.length; i++){
+            for(int j = 0; j<matrix[0].length; j++){
+                if(matrix[i][j] == '1'){
+                    heights[j] += 1;
+                }
+                else{
+                    heights[j] = 0;
+                }
+            }
+            int val = findArea(heights);
+            max = Math.max(max, val);
+        }
+        return max;
+    }
+    private int findArea(int[] heights){
+        int[] newHeights = new int[heights.length+2];
+        System.arraycopy(heights, 0, newHeights, 1, heights.length);
+        LinkedList<Integer> indexes = new LinkedList<>();
+        int max = 0;
+        for(int i = 0; i<newHeights.length; i++){
+            while(!indexes.isEmpty() && newHeights[i]<newHeights[indexes.peekLast()]){
+                int idx = indexes.removeLast();
+                int h = newHeights[idx];
+                int len = i- indexes.peekLast()-1;
+                max = Math.max(max, len* h);
+            }
+            indexes.add(i);
+        }
+        return max;
+    }
+}
+```
+
+#### [120. 三角形最小路径和](https://leetcode-cn.com/problems/triangle/)
+
+难度中等968收藏分享切换为英文接收动态反馈
+
+给定一个三角形 `triangle` ，找出自顶向下的最小路径和。
+
+每一步只能移动到下一行中相邻的结点上。**相邻的结点** 在这里指的是 **下标** 与 **上一层结点下标** 相同或者等于 **上一层结点下标 + 1** 的两个结点。也就是说，如果正位于当前行的下标 `i` ，那么下一步可以移动到下一行的下标 `i` 或 `i + 1` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：triangle = [[2],[3,4],[6,5,7],[4,1,8,3]]
+输出：11
+解释：如下面简图所示：
+   2
+  3 4
+ 6 5 7
+4 1 8 3
+自顶向下的最小路径和为 11（即，2 + 3 + 5 + 1 = 11）。
+```
+
+**示例 2：**
+
+```
+输入：triangle = [[-10]]
+输出：-10
+```
+
+ 
+
+**提示：**
+
+- `1 <= triangle.length <= 200`
+- `triangle[0].length == 1`
+- `triangle[i].length == triangle[i - 1].length + 1`
+- `-104 <= triangle[i][j] <= 104`
+
+ 
+
+**进阶：**
+
+- 你可以只使用 `O(n)` 的额外空间（`n` 为三角形的总行数）来解决这个问题吗？
+
+
+
+```java
+class Solution {
+    public int minimumTotal(List<List<Integer>> triangle) {
+        int len = triangle.size();
+        int[] dp = new int[len+1];
+        for(int i = len-1; i>=0; i--){
+            for(int j = 0; j<=i; j++){
+                dp[j] = Math.min(dp[j], dp[j+1])+triangle.get(i).get(j);
+            }
+        }
+        return dp[0];
+    }
+}
+```
+
+
+
+#### [5. 最长回文子串](https://leetcode-cn.com/problems/longest-palindromic-substring/)
+
+难度中等4772收藏分享切换为英文接收动态反馈
+
+给你一个字符串 `s`，找到 `s` 中最长的回文子串。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。
+```
+
+**示例 2：**
+
+```
+输入：s = "cbbd"
+输出："bb"
+```
+
+ 
+
+**提示：**
+
+- `1 <= s.length <= 1000`
+- `s` 仅由数字和英文字母组成
+
+通过次数898,393
+
+提交次数2,478,302
+
+```java
+class Solution {
+    public String longestPalindrome(String s) {
+        if(s.length()<2){
+            return s;
+        }
+        boolean[][] dp = new boolean[s.length()][s.length()];
+        for(int i = 0; i<s.length(); i++){
+            dp[i][i] = true;
+        }
+        int max = 1;
+        int begin = 0;
+        for(int L = 2; L<=s.length(); L++){
+            for(int i = 0; i<s.length(); i++){
+                int j = i+L-1;
+                //如果越过边界就break
+                if(j>=s.length()){
+                    break;
+                }
+                //给dp[i][j]赋值
+                if(s.charAt(i) == s.charAt(j)){
+                    if(L == 2){
+                        dp[i][j] = true;
+                    }
+                    else{
+                        dp[i][j] = dp[i+1][j-1];
+                    }
+                }
+                //更新最大值
+                if(dp[i][j]&& j-i+1>max){
+                    max = j-i+1;
+                    begin = i;
+                }
+            }
+        }
+        return s.substring(begin, begin+max);
+    }
+}
+```
+
+#### [516. 最长回文子序列](https://leetcode-cn.com/problems/longest-palindromic-subsequence/)
+
+难度中等731收藏分享切换为英文接收动态反馈
+
+给你一个字符串 `s` ，找出其中最长的回文子序列，并返回该序列的长度。
+
+子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "bbbab"
+输出：4
+解释：一个可能的最长回文子序列为 "bbbb" 。
+```
+
+**示例 2：**
+
+```
+输入：s = "cbbd"
+输出：2
+解释：一个可能的最长回文子序列为 "bb" 。
+```
+
+ 
+
+**提示：**
+
+- `1 <= s.length <= 1000`
+- `s` 仅由小写英文字母组成
+
+通过次数104,018
+
+提交次数157,400
+
+```java
+class Solution {
+    public int longestPalindromeSubseq(String s) {
+        int n = s.length();
+        int[][] dp = new int[n][n];
+        for(int i = n-1; i>=0; i--){
+            dp[i][i] = 1;
+            for(int j = i+1; j<n; j++){
+                if(s.charAt(i) == s.charAt(j)){
+                    dp[i][j] = dp[i+1][j-1]+2;
+                }
+                else{
+                    dp[i][j] = Math.max(dp[i][j-1], dp[i+1][j]);
+                }
+            }
+        }
+        return dp[0][n-1];
+    }
+}
+```
+
+#### [215. 数组中的第K个最大元素](https://leetcode-cn.com/problems/kth-largest-element-in-an-array/)
+
+难度中等1500收藏分享切换为英文接收动态反馈
+
+给定整数数组 `nums` 和整数 `k`，请返回数组中第 `**k**` 个最大的元素。
+
+请注意，你需要找的是数组排序后的第 `k` 个最大的元素，而不是第 `k` 个不同的元素。
+
+ 
+
+**示例 1:**
+
+```
+输入: [3,2,1,5,6,4] 和 k = 2
+输出: 5
+```
+
+**示例 2:**
+
+```
+输入: [3,2,3,1,2,4,5,5,6] 和 k = 4
+输出: 4
+```
+
+ 
+
+**提示：**
+
+- `1 <= k <= nums.length <= 104`
+- `-104 <= nums[i] <= 104`
+
+通过次数539,889
+
+提交次数834,648
+
+```java
+//快排关键方法：partition() 
+//返回值是在正确位置的idx
+import java.util.Random;
+class Solution {
+    public int findKthLargest(int[] nums, int k) {
+        int len = nums.length;
+        return find(nums, 0, len-1, len-k);
+    }
+    private int find(int[] nums, int start, int end, int target){
+        if(start<end){
+            //start 和 end可能相等，如果相等这里会报错
+            int pivot_idx = start+new Random().nextInt(end-start);
+            swap(nums, start, pivot_idx);
+        }
+        int pivot_val = nums[start];
+        int i = start;
+        int j = end;
+        while(i<j){
+            while(i<j && nums[j]>=pivot_val){
+                j--;
+            }
+            while(i<j && nums[i]<= pivot_val){
+                i++;
+            }
+            swap(nums, i, j);
+        }
+        swap(nums, i, start);
+        if(i> target){
+            return find(nums, start, i-1, target);
+        }
+        else if(i< target){
+            return find(nums, i+1, end, target);
+        }
+        else{
+            return nums[i];
+        }
+    }
+    private void swap(int[] nums, int i, int j){
+        int tmp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = tmp;
     }
 }
 ```

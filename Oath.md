@@ -36,3 +36,7 @@
 能不能直接将token作为回调URL的一部分呢？不能，因为这样很不安全。
 
 能不能直接把token发给客户端后台呢？不能，这样用户就一直留在认证界面了。
+
+reference:
+
+https://www.ruanyifeng.com/blog/2014/05/oauth_2_0.html

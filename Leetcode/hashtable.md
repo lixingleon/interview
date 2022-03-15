@@ -135,3 +135,76 @@ class Solution {
 }
 ```
 
+
+
+#### [447. 回旋镖的数量](https://leetcode-cn.com/problems/number-of-boomerangs/)
+
+难度中等231收藏分享切换为英文接收动态反馈
+
+给定平面上 `n` 对 **互不相同** 的点 `points` ，其中 `points[i] = [xi, yi]` 。**回旋镖** 是由点 `(i, j, k)` 表示的元组 ，其中 `i` 和 `j` 之间的距离和 `i` 和 `k` 之间的欧式距离相等（**需要考虑元组的顺序**）。
+
+返回平面上所有回旋镖的数量。
+
+**示例 1：**
+
+```
+输入：points = [[0,0],[1,0],[2,0]]
+输出：2
+解释：两个回旋镖为 [[1,0],[0,0],[2,0]] 和 [[1,0],[2,0],[0,0]]
+```
+
+**示例 2：**
+
+```
+输入：points = [[1,1],[2,2],[3,3]]
+输出：2
+```
+
+**示例 3：**
+
+```
+输入：points = [[1,1]]
+输出：0
+```
+
+ 
+
+**提示：**
+
+- `n == points.length`
+- `1 <= n <= 500`
+- `points[i].length == 2`
+- `-104 <= xi, yi <= 104`
+- 所有点都 **互不相同**
+
+通过次数50,728
+
+提交次数76,334
+
+```java
+class Solution {
+    public int numberOfBoomerangs(int[][] points) {
+        //1. 其实就是找跟某个点距离相等的所有点。
+        //2. 与其重复计算两点之间的距离，不如把距离存下来!!!
+        //3. 将各个距离的个数统计出来。
+        int ans = 0;
+        for(int i = 0; i<points.length; i++){
+            HashMap<Integer, Integer> map = new HashMap<>();
+            for(int j = 0; j<points.length; j++){
+                if(i == j){
+                    continue;
+                }
+                int x = points[i][0] - points[j][0];
+                int y = points[i][1] - points[j][1];
+                int dist = x*x+y*y;
+                map.put(dist, map.getOrDefault(dist, 0)+1);
+            }
+            for(int dist: map.values()){
+                ans+= dist*(dist-1);
+            }
+        }
+        return ans;
+    }
+}
+```
+

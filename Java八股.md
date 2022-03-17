@@ -44,7 +44,6 @@
    静态内部类不能接受传参
    ```
 
-   
 
 # 封装、继承、多态
 
@@ -68,12 +67,12 @@
 
 # 访问修饰符
 
-| 修饰符    | 等级               |
-| --------- | ------------------ |
-| public    | 所有类可见         |
-| private   | 只有本类可见       |
+| 修饰符       | 等级        |
+| --------- | --------- |
+| public    | 所有类可见     |
+| private   | 只有本类可见    |
 | protected | 本包和所有子类可见 |
-| default   | 只有本包可见       |
+| default   | 只有本包可见    |
 
 ![image-20211103174843086](C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20211103174843086.png)
 
@@ -107,7 +106,7 @@ how(怎么用的)：
 1. 静态的成员变量，方法和代码块都在类被加载时被加载，且只会加载一次。静态变量和方法是属于类的，独立于对象，可以直接用类来调用
 2. static只能修饰内部类，修饰后可当作普通类使用，而不需要实例化一个外部类。static内部类不能使用外部类的非静态属性和方法
 
-2. 静态方法不可以访问非静态的方法和成员变量
+3. 静态方法不可以访问非静态的方法和成员变量
 
 why(好处是什么)：
 
@@ -191,9 +190,9 @@ LinkedList
       1. JDK1.8以前是数组加链表
       2. JDK1.8及以后，链表长度大于8且数组长度大于64，就把链表转化为红黑树
       3. 红黑树是一种平衡二叉树，没有AVL树那么严格。牺牲了一点严格性，但是插入和删除效率大幅提高。
-   
+
    3. 常用方法：
-   
+
       ```java
       HashMap<String ,String> map = new HashMap<>();
       //1. 获取所有的key
@@ -202,9 +201,9 @@ LinkedList
       Collection<String> values = map.values();
       //3. 获取键值对
       Set<java.util.Map.Entry<String,String>> set = map.entrySet();
-      
+
       ```
-   
+
    4. 如何解决哈希冲突？
       1. 链表加数组的形式
    5. put方法怎么实现的？
@@ -341,16 +340,16 @@ src只能用来读取，dest只能用来写入。
 
 基本数据类型：
 
-| 数据类型 | 大小   |
-| -------- | ------ |
-| byte     | 8bits  |
-| short    | 16bits |
-| int      | 32bits |
-| long     | 64bits |
-| float    | 32bits |
-| double   | 64bits |
-| char     | 16bits |
-| boolean  | 1bit   |
+| 数据类型    | 大小     |
+| ------- | ------ |
+| byte    | 8bits  |
+| short   | 16bits |
+| int     | 32bits |
+| long    | 64bits |
+| float   | 32bits |
+| double  | 64bits |
+| char    | 16bits |
+| boolean | 1bit   |
 
 
 
@@ -688,6 +687,39 @@ clinit are the static initialization blocks for the class, and static field init
 
 解决方案：尽量减少对象的作用域。记得将长生命周期的引用置为null
 
+## 内存泄漏排查思路：
+
+1. gc log可以查看每次GC后eden区，survivor区，heap内存的变化情况。
+2. 用arthas，使用trace追踪接口耗时。
+3. arthas还可以调用dashboard查看JVM实时数据面板(可以查看young gc的次数)
+4. 通过jmap查看JVM堆里具体有哪些对象
+
+```java
+通过这三个命令，我们可以很清楚的看到当前进程中对象的大小及个数，从而辅助我们进行分析
+jmap -histo pid|head -n 10 查看前10位
+jmap -histo pid | sort -k 2 -g -r 查看对象数最多的对象，按降序输出
+jmap -histo pid | sort -k 3 -g -r 查看内存的对象，按降序输出
+
+Class name:
+[C表示char[] （char[]数量多是因为String内部用char[]保存数据）
+[I表示int[]
+[[I表示int[][]
+[B表示byte[]
+[S表示short[]
+```
+
+5. 查看tcp连接数
+
+```java
+yum install net-tools
+运行【netstat -aonp | grep tcp| wc -l】查看各种状态的TCP连接数量和。如果总数较小（例如小于500），则排除连接数占用过多问题。
+假如发现连接数较多，可以用【netstat -natp|awk ‘{print $7}’|sort|uniq -c|sort -rn】按照PID统计TCP连接的数量，然后对连接数较多的进程逐一排查
+netstat -aonp | grep tcp| wc -l
+netstat -natp|awk '{print $7}'|sort|uniq -c|sort -rn
+```
+
+内存泄漏最终会导致内存溢出
+
 ## 类加载过程
 
 加载 连接（校验，准备，解析） 初始化
@@ -790,6 +822,18 @@ BootstrapClassLoader：加载核心类，如jre/rt.jar包
 老年代对象存活周期长。使用标记-压缩算法
 
 
+
+### GC触发条件
+
+新对象优先放入Eden区
+
+大对象直接放入老年代
+
+15岁的对象会从Eden区晋升到老年代
+
+Minor GC触发条件：Eden区满触发Minor GC
+
+Full GC触发条件：老年代空间不足触发Full GC
 
 
 
@@ -935,9 +979,9 @@ thread2中this.notify()之后，处于wait状态的thread1被唤醒，进入read
 ## lock接口和synchronized关键字
 
 1. Lock是一个接口，synchronized是java内置的关键字。
-3. lock可以让等待锁的线程中断，synchronized不行。
-4. lock可以知道有没有获得锁，synchronized不行。
-5. lock有读写锁，可以提高多个线程读操作的效率。
+2. lock可以让等待锁的线程中断，synchronized不行。
+3. lock可以知道有没有获得锁，synchronized不行。
+4. lock有读写锁，可以提高多个线程读操作的效率。
 5. synchronized发生异常时会自动释放锁，lock不会，所以一般都需要在finally块中释放锁unlock()。
 
 ## 可重入锁等
@@ -1029,4 +1073,28 @@ class Singleton{
     }
 }
 ```
+
+# 常用linux命令
+
+awk处理日志等每行格式相同的文本文件
+
+sed利用脚本处理文本文件
+
+grep查找
+
+```java
+linux管道符号： |
+把前一个命令的输出作为后一个命令的输入
+重定向符号：>
+把前一个命令的输出写入到文件
+
+ps -ef 列出所有进程
+less, more, head 查看一个文件
+chmod 修改权限
+chmod 777修改修改修改 754 修改执行查看
+三个数字代表三个角色owner，group和other user
+每个数字代表三个bit的权限单元rwx：read，write和excute
+```
+
+
 

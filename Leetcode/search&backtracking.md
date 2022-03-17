@@ -860,7 +860,7 @@ class Solution {
 字典 `wordList` 中从单词 `beginWord`* *和 `endWord` 的 **转换序列 **是一个按下述规格形成的序列 `beginWord -> s1 -> s2 -> ... -> sk`：
 
 - 每一对相邻的单词只差一个字母。
--  对于 `1 <= i <= k` 时，每个 `si` 都在 `wordList` 中。注意， `beginWord`* *不需要在 `wordList` 中。
+- 对于 `1 <= i <= k` 时，每个 `si` 都在 `wordList` 中。注意， `beginWord`* *不需要在 `wordList` 中。
 - `sk == endWord`
 
 给你两个单词* *`beginWord`* *和 `endWord` 和一个字典 `wordList` ，返回 *从 beginWord 到 endWord 的 \**最短转换序列** 中的 **单词数目*** 。如果不存在这样的转换序列，返回 `0` 。
@@ -944,6 +944,86 @@ class Solution {
             step++;
         }
         return 0;
+    }
+}
+```
+
+#### [2044. 统计按位或能得到最大值的子集数目](https://leetcode-cn.com/problems/count-number-of-maximum-bitwise-or-subsets/)
+
+难度中等61
+
+给你一个整数数组 `nums` ，请你找出 `nums` 子集 **按位或** 可能得到的** ****最大值** ，并返回按位或能得到最大值的 **不同非空子集的数目** 。
+
+如果数组 `a` 可以由数组 `b` 删除一些元素（或不删除）得到，则认为数组 `a` 是数组 `b` 的一个 **子集** 。如果选中的元素下标位置不一样，则认为两个子集 **不同** 。
+
+对数组 `a` 执行 **按位或** ，结果等于 `a[0] **OR** a[1] **OR** ... **OR** a[a.length - 1]`（下标从 **0** 开始）。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [3,1]
+输出：2
+解释：子集按位或能得到的最大值是 3 。有 2 个子集按位或可以得到 3 ：
+- [3]
+- [3,1]
+
+```
+
+**示例 2：**
+
+```
+输入：nums = [2,2,2]
+输出：7
+解释：[2,2,2] 的所有非空子集的按位或都可以得到 2 。总共有 23 - 1 = 7 个子集。
+
+```
+
+**示例 3：**
+
+```
+输入：nums = [3,2,1,5]
+输出：6
+解释：子集按位或可能的最大值是 7 。有 6 个子集按位或可以得到 7 ：
+- [3,5]
+- [3,1,5]
+- [3,2,5]
+- [3,2,1,5]
+- [2,5]
+- [2,1,5]
+```
+
+ 
+
+**提示：**
+
+- `1 <= nums.length <= 16`
+- `1 <= nums[i] <= 105`
+
+```java
+//数据量只有16，直接回溯dfs即可
+//注意体会这里是如何撤销选择的：并不需要像其他回溯题一样将加进列表的值删除。
+//求最值的个数问题通用方法：碰到更大值就清空目前的cnt，碰到相等值就将目前cnt加1，碰到更小值不做任何操作。
+class Solution {
+    int max = 0;
+    int cnt = 0;
+    public int countMaxOrSubsets(int[] nums) {
+        dfs(nums, 0, 0);
+        return cnt;
+    }
+    private void dfs(int[] nums, int val, int begin){
+        for(int i = begin; i<nums.length; i++){
+            int newVal = val| nums[i];
+            if(newVal>max){
+                max = newVal;
+                cnt = 1;
+            }
+            else if(newVal == max){
+                cnt++;
+            }
+            dfs(nums, newVal, i+1);
+        }
     }
 }
 ```

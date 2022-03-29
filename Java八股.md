@@ -27,12 +27,12 @@
    在java 5之前， volatile 并不能避免指令重排问题
    ```
 
-2. 静态内部类
+2. 静态内部类(加载外部类的时候不会加载内部类)
 
    ```java
    public Singleton{
    	private static class SingletonHolder{
-   		static final Singleton singleton = new Singleton();
+   		static Singleton singleton = new Singleton();
    	}
    	private Singleton(){
    	
@@ -49,7 +49,7 @@
 
 继承：
 
-1. 子类继承父类。得到父类所有变量和方法。但无法获取访问修饰符规定外的属性和方法
+1. 子类继承父类。得到父类所有变量和方法。但子类无法直接访问父类的私有属性和方法。
 2. 子类可以有自己的属性和方法
 3. 子类可以重写父类方法
 
@@ -687,6 +687,8 @@ clinit are the static initialization blocks for the class, and static field init
 
 解决方案：尽量减少对象的作用域。记得将长生命周期的引用置为null
 
+StackOverFlowError Java栈溢出，原因是循环递归调用。线程每运行一个方法就会往栈中压入一个栈帧。循环递归会导致栈空间不足，所以报栈溢出错误。
+
 ## 内存泄漏排查思路：
 
 1. gc log可以查看每次GC后eden区，survivor区，heap内存的变化情况。
@@ -732,11 +734,11 @@ netstat -natp|awk '{print $7}'|sort|uniq -c|sort -rn
 
 ##### 类加载器
 
+BootstrapClassLoader：加载核心类，如jre/rt.jar包
+
 applicationClassLoader：加载classpath下的内容
 
 extensionClassLoader：加载jre/lib/ext下的一些内容
-
-BootstrapClassLoader：加载核心类，如jre/rt.jar包
 
 ##### 双亲委派机制
 
@@ -950,6 +952,10 @@ JVM通过ACC_SYNCHRONIZED标志来确定方法是同步方法。
 ## volatile关键字
 
 只能用来修饰变量。保证了变量的可见性，禁止了指令重排。但不保证原子性。 
+
+### 为什么不保证原子性
+
+假设内存中i=0，线程1读取i，自增1后，线程2也读取i，这时线程1还未写入i，所以内存中i还等于0。 线程2也自增1，并写入工作内存。这时会刷新主内存。这时线程1继续运行，虽然线程1内存中的i已经失效，但线程1现在只需要做最后一步写入操作，不需要读了，所以线程1直接写入i，i仍旧为1。增加1的操作丢失了。
 
 ### 如何实现可见性
 

@@ -125,11 +125,17 @@ why(好处是什么)：
 
 ### Collection
 
-![image-20211105130045830](C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20211105130045830.png)
+用于存放单一元素
 
 ### Map
 
-![image-20211105130129870](C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20211105130129870.png)
+用于存放键值对
+
+![image-20211105130045830](https://javaguide.cn/assets/java-collection-hierarchy.1727461b.png)
+
+### 
+
+
 
 3. List，Set，Map的区别
 
@@ -166,7 +172,7 @@ LinkedList
 增删元素复杂度：
 
 1. 在list开头：O(1)，
-2. 在list中间：O(n)
+2. 在list中间：O(n)（因为查找需要O(n)，可以配合HashMap将查找优化到O(1)，原理同LRU。）
 3. 在list结尾： O(1);
 
 
@@ -229,7 +235,8 @@ LinkedList
 ### ConcurrentHashMap
 
 1. HashTable给全局上锁，效率太低。
-2. ConcurrentHashMap使用分段锁。维护一个segment数组（类似一个哈希表数组）。一个segment数组维护一个HashEntry数组（类似一个Node对象）
+2. ConcurrentHashMap在Java 1.7使用Segment分段锁。实现了ReentrantLock可重入锁
+3. 在Java1.8取消分段，使用synchronized和CAS保证并发安全
 
 # 泛型
 
@@ -691,8 +698,8 @@ StackOverFlowError Java栈溢出，原因是循环递归调用。线程每运行
 
 ## 内存泄漏排查思路：
 
-1. gc log可以查看每次GC后eden区，survivor区，heap内存的变化情况。
-2. 用arthas，使用trace追踪接口耗时。
+1. 用arthas，使用trace追踪接口耗时。
+2. gc log可以查看每次GC后eden区，survivor区，heap内存的变化情况。
 3. arthas还可以调用dashboard查看JVM实时数据面板(可以查看young gc的次数)
 4. 通过jmap查看JVM堆里具体有哪些对象
 
@@ -890,7 +897,11 @@ Full GC触发条件：老年代空间不足触发Full GC
        Thread thread = new Thread(runnable);
        thread.start();
    }
+
+
    ```
+
+3. 实现Callable接口，可以返回结果Future
 
 ## 线程不安全的例子
 
@@ -927,11 +938,25 @@ Full GC触发条件：老年代空间不足触发Full GC
 
 守护线程会依赖于创建它的线程，当创建它的线程结束后，守护线程也会结束。垃圾回收线程就是守护线程。而用户线程则不会，会一直运行到程序结束。
 
+## ThreadLocal
+
+所有线程共用一个ThreadLocal对象。
+
+每个线程对象都有一个自己的ThreadLocalMap对象。
+
+这个map以ThreadLocal对象为key，以真正的存储对象为value。
+
+ThreadLocal对象重写initialValue方法
+
+ThreadLocal.get() 方法底层是获取这个线程的ThreadLocalMap对象，map对象通过get(this)的方式获取ThreadLocal对象对应的value值。
+
 ## synchronized关键字
 
 ### 说说对synchronized关键字的了解
 
 synchronized是使用了对象的内置锁，来实现对变量的同步操作，保证同一时间只有一个线程可以执行该段代码。能够保证变量操作的原子性、有序性和其他线程对变量的可见性。从而确保了并发安全。
+
+保证并发安全要维护的三个特性：原子性，有序性，可见性
 
 ### 怎么使用synchronized的
 
@@ -982,31 +1007,35 @@ thread2中this.notify()之后，处于wait状态的thread1被唤醒，进入read
 1. sleep是thread对象的方法。只能睡指定时间。调用sleep方法后会让出CPU但不会释放锁。
 2. wait是内置锁对象的方法。可以一直wait直到被唤醒，也可以wait指定时间后自动醒。调用wait会释放锁。wait只能在同步方法和代码块中使用。
 
-## lock接口和synchronized关键字
+## JUC并发包
 
-1. Lock是一个接口，synchronized是java内置的关键字。
-2. lock可以让等待锁的线程中断，synchronized不行。
-3. lock可以知道有没有获得锁，synchronized不行。
-4. lock有读写锁，可以提高多个线程读操作的效率。
-5. synchronized发生异常时会自动释放锁，lock不会，所以一般都需要在finally块中释放锁unlock()。
+https://segmentfault.com/a/1190000015558984
 
-## 可重入锁等
+主要包含：
 
-可重入锁：锁是基于线程分配的，不是基于方法分配的。
+1. 一些锁工具，比如可重入锁，读写锁等
+2. 线程安全的容器类，比如ConcurrentHashMap，CopyOnWriteArrayList
+3. 使用CAS原理的原子类，比如AtomicInteger
+4. 线程池
 
-可中断锁：Lock是可中断锁，synchronized不是。
 
-公平锁：ReentrantLock lock = new ReentrantLock(true) 是公平的。等待最久的线程最先得到锁。synchronized不是。
 
-读写锁：读写分开的锁。
+## reentrantlock较synchronized关键字的优点
+
+都是可重入锁，但调度更灵活
+
+1. 等待锁时可以中断
+2. 可以依靠condition实现选择性通知
+3. 可以实现公平锁
 
 ## 线程安全的容器
 
 1. vector
 2. SynchronizedList
 3. CopyonWriteArrayList
-   1. 写时复制
+   1. 写时复制，读时不影响。写的时候赋值一份数组，在新数组上写，写完后将引用指向新数组
 4. ConcurrentHashMap
+   1. 靠synchronized和CAS悲观和乐观锁机制保证并发安全
 
 ## 原子类
 
@@ -1016,17 +1045,9 @@ compareAndSet(int expected, int newValue);
 
 这个方法会先比较现在的值跟expected是否相等。如果相等才会把新值赋给对象。
 
-compareAndSet底层用到了CAS指令。如果现在的值和expected值不等，就不会赋予新值。
+compareAndSet底层用到了CAS指令。如果现在的值和expected值不等，就会自旋，获取新的值并重新尝试赋值。
 
-## ThreadLocal
 
-每个线程对象都有一个ThreadLocalMap对象。
-
-这个map以ThreadLocal对象为key，以真正的存储对象为value。
-
-ThreadLocal对象重写initialValue方法
-
-ThreadLocal.get() 方法底层是获取这个线程的ThreadLocalMap对象，map对象通过get(this)的方式获取ThreadLocal对象对应的value值。
 
 ## 线程池
 
@@ -1042,11 +1063,12 @@ new ThreadPoolExecutor（
 ）
 ```
 
-Runnable对象和Callable对象
+四个拒绝策略：
 
-Callable能够抛出异常和返回结果
-
-
+1. 忽略（不会更新future状态，会导致future.get一直阻塞）
+2. 拒绝（默认）
+3. 用当前线程执行
+4. 抛弃老任务
 
 # 设计模式
 

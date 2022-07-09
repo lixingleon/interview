@@ -223,11 +223,7 @@ LinkedList
       1. 用hash函数将key对象的hashcode经过哈希扰动得到新的哈希值
       2. 再将这个值和（length-1）做and位运算得到索引
    7. 为什么数组容量都是2的次幂？
-      1. 由6.2我们知道，若length是2的次幂，那length-1的低位就都是1。举例：16 = 10000， 15 = 01111， 32=100000， 31= 011111
-      2. 则扩容以后，length-1只会在高位多一个1，只要key对象的哈希值在那个1位置上是0，那扩容后index会保持不变。这样就大大减少了老数组中位置的重新调换。
-      3. 再一个。低位都是1会让获得的数据索引更均匀。如果低位是0，那key对象的哈希值在这个位置不管是0还是1，得到的索引都是一样的，这样提高了哈希碰撞的可能性。
-      4. ![image-20211105163616609](C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20211105163616609.png)
-      5. ![image-20211105163700021](C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20211105163700021.png)
+      1. 因为hash%2^n == hash&2^n-1 可以利用位运算加速取余运算。
    8. resize过程
       1. 如果数组大小已经到达最大：2^30，则不再扩容。
       2. 创建一个大小为两倍的新数组，遍历每个位置的每个节点，通过新的数组size计算新的index，把旧数据拷贝到新数据上去
@@ -596,9 +592,19 @@ SOLID
 面向抽象编程，而不要面向抽象的具体实现编程
 ```
 
+简单工厂模式：product是接口，工厂是实体类。新增product时需要修改工厂代码。不符合开闭原则
 
+工厂方法模式：product和factory都是接口。新增product只需写一个product的实现类，再新增一个factory的实现类。不需要修改两个接口。
+
+抽象工厂模式：factory接口有多个方法。createProductA，createProductB等，新增product需要修改接口，不符合开闭原则。
 
 # 异常处理
+
+#IO模型
+
+1. BIO 同步阻塞
+2. NIO 同步非阻塞（IO多路复用）
+3. AIO 异步IO
 
 # IO流
 
@@ -680,6 +686,10 @@ clinit are the static initialization blocks for the class, and static field init
    1. 指向当前线程所执行的字节码的行数。
    2. 线程切换回来后知道从哪里继续执行。
 
+JDK8为什么将方法区变成元空间？
+
+因为元空间在直接内存，方法区在JVM虚拟机的内存，这样元空间的空间就更大了，不受JVM的内存限制。
+
 ## Java内存模型
 
 有一块主内存，每个线程都有独立的工作内存。工作内存中的变量是主内存中变量的副本，不同工作内存之间不能直接互相访问。变量传递要通过主内存。
@@ -698,10 +708,15 @@ StackOverFlowError Java栈溢出，原因是循环递归调用。线程每运行
 
 ## 内存泄漏排查思路：
 
-1. 用arthas，使用trace追踪接口耗时。
-2. gc log可以查看每次GC后eden区，survivor区，heap内存的变化情况。
-3. arthas还可以调用dashboard查看JVM实时数据面板(可以查看young gc的次数)
-4. 通过jmap查看JVM堆里具体有哪些对象
+1. 先判断是算法端服务超时还是服务端服务超时（是服务端）
+2. 用arthas，使用trace追踪接口耗时。（排除业务代码导致耗时）
+3. 用arthas，查看线程的CPU占用情况，和young GC次数
+4. 查看Rancher上内存，CPU的信息
+5. 初步判定是内存泄漏
+6. gc log可以查看每次GC后eden区，survivor区，heap内存的变化情况。
+7. arthas还可以调用dashboard查看JVM实时数据面板(可以查看young gc的次数，CPU的占用情况)
+8. 确定是内存泄漏
+9. 通过jmap查看JVM堆里具体有哪些对象
 
 ```java
 通过这三个命令，我们可以很清楚的看到当前进程中对象的大小及个数，从而辅助我们进行分析
@@ -743,13 +758,13 @@ netstat -natp|awk '{print $7}'|sort|uniq -c|sort -rn
 
 BootstrapClassLoader：加载核心类，如jre/rt.jar包
 
-applicationClassLoader：加载classpath下的内容
-
 extensionClassLoader：加载jre/lib/ext下的一些内容
+
+applicationClassLoader：加载classpath下的内容
 
 ##### 双亲委派机制
 
-自底向上检查类是否被加载。自顶向下尝试加载类
+自底向上检查类是否被加载，如果已被加载就直接返回。自顶向下尝试加载类，加载好后也直接返回。
 
 好处：能确保一个类只会被一个类加载器加载。因为一个类和加载它的类加载器共同确定类的唯一性，这样就保证了类的唯一性，避免重复加载类。保证核心API不被篡改。
 
@@ -767,7 +782,7 @@ extensionClassLoader：加载jre/lib/ext下的一些内容
 
 ### **初始化**：
 
-真正开始执行java字节码，调用<clinit>方法，执行static变量的赋值和static代码块。
+真正开始执行java字节码，调用<clinit>方法，执行static变量的赋值和static代码块。（clinit方法是线程安全的，单例模式的静态内部类实现方式就是利用了这一特性。）
 
 什么时候一定要初始化：
 
@@ -844,7 +859,13 @@ Minor GC触发条件：Eden区满触发Minor GC
 
 Full GC触发条件：老年代空间不足触发Full GC
 
+### 垃圾回收器
 
+G1和CMS有什么区别？
+
+CMS是用户线程和垃圾回收线程可以并发执行的。因为用户线程还在执行，所以不能轻易改变对象的内存地址，所以使用的是标记清除算法。
+
+G1是面向服务端应用的，是分代收集的
 
 # 多线程
 
@@ -897,9 +918,8 @@ Full GC触发条件：老年代空间不足触发Full GC
        Thread thread = new Thread(runnable);
        thread.start();
    }
-
-
    ```
+
 
 3. 实现Callable接口，可以返回结果Future
 
@@ -1025,7 +1045,7 @@ https://segmentfault.com/a/1190000015558984
 都是可重入锁，但调度更灵活
 
 1. 等待锁时可以中断
-2. 可以依靠condition实现选择性通知
+2. 可以依靠condition实现选择性唤醒
 3. 可以实现公平锁
 
 ## 线程安全的容器
@@ -1051,6 +1071,12 @@ compareAndSet底层用到了CAS指令。如果现在的值和expected值不等�
 
 ## 线程池
 
+### 线程池的运行过程
+
+线程池刚创建时，没有线程。一个任务进来时，如果核心线程有空闲，就执行任务，如果核心线程都在工作，且核心线程数还没到，就创建线程执行任务。否则放到等待队列。队列满后，如果线程池未满，就创建线程执行任务。
+
+当非核心线程在最大存活时间之后还没有任务，就销毁该线程。
+
 ```java
 new ThreadPoolExecutor（
 	int CorePoolSize,
@@ -1069,6 +1095,10 @@ new ThreadPoolExecutor（
 2. 拒绝（默认）
 3. 用当前线程执行
 4. 抛弃老任务
+
+阻塞队列：
+
+分有界，无界，无队列
 
 # 设计模式
 
@@ -1104,11 +1134,11 @@ class Singleton{
 
 # 常用linux命令
 
-awk处理日志等每行格式相同的文本文件
+awk生成日志分析报告（读取每一行，并按空格切片）
 
-sed利用脚本处理文本文件
+sed（stream editor）编辑文本内容：替换或删除某个特定词
 
-grep查找
+grep搜索文本内容
 
 ```java
 linux管道符号： |
@@ -1126,7 +1156,7 @@ chmod 777修改修改修改 754 修改执行查看
 
 
 
-
+<https://www.cnblogs.com/xiaoxie2014/p/12896359.html>
 
 
 
